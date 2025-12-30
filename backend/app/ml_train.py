@@ -37,3 +37,12 @@ preds = model.predict(X_test)
 accuracy = accuracy_score(y_test, preds)
 
 print("Model accuracy:", round(accuracy, 3))
+
+from sklearn.metrics import confusion_matrix, classification_report
+
+cm = confusion_matrix(y_test, preds)
+print("\nConfusion Matrix:")
+print(cm)
+
+print("\nClassification Report:")
+print(classification_report(y_test, preds))
