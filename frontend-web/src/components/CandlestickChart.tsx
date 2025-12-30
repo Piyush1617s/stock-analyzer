@@ -2,30 +2,37 @@ import { useEffect, useRef } from "react";
 import {
   createChart,
   CandlestickSeries,
+  LineSeries,
 } from "lightweight-charts";
 
 type Candle = {
-  time: string;   // ✅ FIX: use string
+  time: string;
   open: number;
   high: number;
   low: number;
   close: number;
 };
 
-type Props = {
-  data: Candle[];
+type LinePoint = {
+  time: string;
+  value: number | null;
 };
 
+type Props = {
+  candles: Candle[];
+  sma: LinePoint[];
+  ema: LinePoint[];
+};
 
-function CandlestickChart({ data }: Props) {
-  const chartContainerRef = useRef<HTMLDivElement>(null);
+function CandlestickChart({ candles, sma, ema }: Props) {
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!chartContainerRef.current) return;
+    if (!ref.current) return;
 
-    const chart = createChart(chartContainerRef.current, {
-      width: chartContainerRef.current.clientWidth,
-      height: 400,
+    const chart = createChart(ref.current, {
+      width: ref.current.clientWidth,
+      height: 420,
       layout: {
         background: { color: "#ffffff" },
         textColor: "#000",
@@ -36,7 +43,7 @@ function CandlestickChart({ data }: Props) {
       },
     });
 
-    const series = chart.addSeries(CandlestickSeries, {
+    const candleSeries = chart.addSeries(CandlestickSeries, {
       upColor: "#16a34a",
       downColor: "#dc2626",
       borderUpColor: "#16a34a",
@@ -45,14 +52,28 @@ function CandlestickChart({ data }: Props) {
       wickDownColor: "#dc2626",
     });
 
-    series.setData(data);
+    const smaSeries = chart.addSeries(LineSeries, {
+      color: "#2563eb",
+      lineWidth: 2,
+    });
+
+    const emaSeries = chart.addSeries(LineSeries, {
+      color: "#f59e0b",
+      lineWidth: 2,
+    });
+
+    candleSeries.setData(candles);
+    smaSeries.setData(sma.filter((p) => p.value !== null));
+    emaSeries.setData(ema.filter((p) => p.value !== null));
+
+    chart.timeScale().fitContent();
 
     return () => {
       chart.remove();
     };
-  }, [data]);
+  }, [candles, sma, ema]);
 
-  return <div ref={chartContainerRef} />;
+  return <div ref={ref} />;
 }
 
 export default CandlestickChart;

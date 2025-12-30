@@ -1,9 +1,10 @@
+import Card from "../components/Card";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { fetchStockHistory } from "../services/api";
+import { fetchStockHistory, fetchIndicators } from "../services/api";
 import CandlestickChart from "../components/CandlestickChart";
 
-type OHLCPoint = {
+type OHLC = {
   date: string;
   open: number;
   high: number;
@@ -11,17 +12,26 @@ type OHLCPoint = {
   close: number;
 };
 
+type Indicator = {
+  date: string;
+  close: number;
+  sma: number | null;
+  ema: number;
+};
+
 function StockDetail() {
   const { symbol } = useParams();
-  const [history, setHistory] = useState<OHLCPoint[]>([]);
+  const [history, setHistory] = useState<OHLC[]>([]);
+  const [indicators, setIndicators] = useState<Indicator[]>([]);
 
   useEffect(() => {
-    if (symbol) {
-      fetchStockHistory(symbol).then(setHistory);
-    }
+    if (!symbol) return;
+
+    fetchStockHistory(symbol).then(setHistory);
+    fetchIndicators(symbol).then(setIndicators);
   }, [symbol]);
 
-  const candleData = history.map((h) => ({
+  const candles = history.map((h) => ({
     time: h.date,
     open: h.open,
     high: h.high,
@@ -29,17 +39,33 @@ function StockDetail() {
     close: h.close,
   }));
 
+  const sma = indicators.map((i) => ({
+    time: i.date,
+    value: i.sma,
+  }));
+
+  const ema = indicators.map((i) => ({
+    time: i.date,
+    value: i.ema,
+  }));
+
   return (
-    <div>
-      <h2>{symbol}</h2>
+  <div>
+    <h2 style={{ marginBottom: "16px" }}>{symbol}</h2>
 
-      {history.length === 0 ? (
-        <p>Loading candlestick chart...</p>
-      ) : (
-        <CandlestickChart data={candleData} />
-      )}
-    </div>
-  );
+    <Card title="Price Chart (Candlestick)">
+      <CandlestickChart candles={candles} sma={sma} ema={ema} />
+    </Card>
+
+    <Card title="Indicators">
+      <p>
+        <span style={{ color: "#2563eb" }}>●</span> SMA (Simple Moving Average)
+      </p>
+      <p>
+        <span style={{ color: "#f59e0b" }}>●</span> EMA (Exponential Moving Average)
+      </p>
+    </Card>
+  </div>
+);
 }
-
 export default StockDetail;

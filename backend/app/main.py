@@ -85,3 +85,34 @@ def get_stock_history(symbol: str):
         })
 
     return history
+
+@app.get("/stock/{symbol}/indicators")
+def get_stock_indicators(symbol: str, period: int = 10):
+    ticker_map = {
+        "RELIANCE": "RELIANCE.NS",
+        "TCS": "TCS.NS",
+        "INFY": "INFY.NS"
+    }
+
+    ticker = ticker_map.get(symbol.upper())
+    if not ticker:
+        return {}
+
+    stock = yf.Ticker(ticker)
+    data = stock.history(period="3mo")
+
+    close_prices = data["Close"]
+
+    sma = close_prices.rolling(window=period).mean()
+    ema = close_prices.ewm(span=period, adjust=False).mean()
+
+    indicators = []
+    for i in range(len(data)):
+        indicators.append({
+            "date": data.index[i].strftime("%Y-%m-%d"),
+            "close": round(float(close_prices.iloc[i]), 2),
+            "sma": round(float(sma.iloc[i]), 2) if not sma.isna().iloc[i] else None,
+            "ema": round(float(ema.iloc[i]), 2),
+        })
+
+    return indicators

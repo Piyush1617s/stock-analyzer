@@ -9,3 +9,10 @@ export async function fetchStockHistory(symbol: string) {
   );
   return response.json();
 }
+
+export async function fetchIndicators(symbol: string) {
+  const res = await fetch(
+    `http://127.0.0.1:8000/stock/${symbol}/indicators`
+  );
+  return res.json();
+}
