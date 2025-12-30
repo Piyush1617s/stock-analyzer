@@ -190,3 +190,59 @@ def predict_direction(symbol: str):
         "prediction": prediction,
         "confidence": round(float(prob), 3)
     }
+@app.get("/stock/{symbol}/explain")
+def explain_stock(symbol: str):
+    ticker_map = {
+        "RELIANCE": "RELIANCE.NS",
+        "TCS": "TCS.NS",
+        "INFY": "INFY.NS"
+    }
+
+    ticker = ticker_map.get(symbol.upper())
+    if not ticker:
+        return {"explanation": ["Unknown stock symbol."]}
+
+    stock = yf.Ticker(ticker)
+    data = stock.history(period="1mo")
+
+    close = data["Close"]
+    ema = close.ewm(span=10).mean().iloc[-1]
+    sma = close.rolling(10).mean().iloc[-1]
+    volatility = close.pct_change().rolling(10).std().iloc[-1]
+
+    explanation = []
+
+    # Trend explanation
+    if ema > sma:
+        explanation.append(
+            "Short-term momentum is stronger than the long-term trend (EMA is above SMA)."
+        )
+    else:
+        explanation.append(
+            "Short-term momentum is weaker than the long-term trend (EMA is below SMA)."
+        )
+
+    # Volatility explanation
+    if volatility > 0.02:
+        explanation.append(
+            "Volatility is relatively high, which increases risk and reduces prediction reliability."
+        )
+    else:
+        explanation.append(
+            "Volatility is relatively low, indicating more stable price movement."
+        )
+
+    # ML behavior explanation
+    explanation.append(
+        "The AI model only gives signals when confidence is sufficiently high. "
+        "If no signal is shown, it means the model does not see a reliable edge."
+    )
+
+    explanation.append(
+        "AI outputs probabilities, not certainty. These insights should support, not replace, decision-making."
+    )
+
+    return {
+        "symbol": symbol,
+        "explanation": explanation
+    }

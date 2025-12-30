@@ -1,3 +1,4 @@
+import ChatBox from "../components/ChatBox";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { fetchStockHistory, fetchIndicators, fetchPrediction } from "../services/api";
@@ -27,6 +28,7 @@ function StockDetail() {
     prediction: "UP" | "DOWN";
     confidence: number;
   } | null>(null);
+  const [explanation, setExplanation] = useState<string[]>([]);
 
   useEffect(() => {
     if (!symbol) return;
@@ -34,6 +36,10 @@ function StockDetail() {
     fetchStockHistory(symbol).then(setHistory);
     fetchIndicators(symbol).then(setIndicators);
     fetchPrediction(symbol).then(setPrediction);
+    fetch(`http://127.0.0.1:8000/stock/${symbol}/explain`)
+      .then(res => res.json())
+      .then(data => setExplanation(data.explanation));
+
   }, [symbol]);
 
   const candles = history.map((h) => ({
@@ -104,6 +110,7 @@ function StockDetail() {
     <p>Loading AI signal...</p>
   )}
 </Card>
+      <ChatBox explanation={explanation} />
 
   </div>
 );
