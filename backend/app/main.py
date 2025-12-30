@@ -116,3 +116,38 @@ def get_stock_indicators(symbol: str, period: int = 10):
         })
 
     return indicators
+@app.get("/stock/{symbol}/features")
+def get_stock_features(symbol: str):
+    ticker_map = {
+        "RELIANCE": "RELIANCE.NS",
+        "TCS": "TCS.NS",
+        "INFY": "INFY.NS"
+    }
+
+    ticker = ticker_map.get(symbol.upper())
+    if not ticker:
+        return []
+
+    stock = yf.Ticker(ticker)
+    data = stock.history(period="6mo")
+
+    close = data["Close"]
+
+    returns = close.pct_change()
+    ema = close.ewm(span=10, adjust=False).mean()
+    sma = close.rolling(window=10).mean()
+    volatility = returns.rolling(window=10).std()
+
+    features = []
+    for i in range(len(data)):
+        features.append({
+            "date": data.index[i].strftime("%Y-%m-%d"),
+            "close": round(float(close.iloc[i]), 2),
+            "return": round(float(returns.iloc[i]), 4) if not returns.isna().iloc[i] else None,
+            "ema": round(float(ema.iloc[i]), 2),
+            "sma": round(float(sma.iloc[i]), 2) if not sma.isna().iloc[i] else None,
+            "momentum": round(float(ema.iloc[i] - sma.iloc[i]), 2) if not sma.isna().iloc[i] else None,
+            "volatility": round(float(volatility.iloc[i]), 4) if not volatility.isna().iloc[i] else None,
+        })
+
+    return features
