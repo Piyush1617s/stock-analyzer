@@ -62,6 +62,25 @@ def get_stock_history(symbol: str):
     for date, row in data.iterrows():
         history.append({
             "date": date.strftime("%Y-%m-%d"),
+            "open": round(float(row["Open"]), 2),
+            "high": round(float(row["High"]), 2),
+            "low": round(float(row["Low"]), 2),
+            "close": round(float(row["Close"]), 2),
+        })
+
+    return history
+
+    ticker = ticker_map.get(symbol.upper())
+    if not ticker:
+        return []
+
+    stock = yf.Ticker(ticker)
+    data = stock.history(period="1mo")
+
+    history = []
+    for date, row in data.iterrows():
+        history.append({
+            "date": date.strftime("%Y-%m-%d"),
             "close": round(float(row["Close"]), 2)
         })
 
