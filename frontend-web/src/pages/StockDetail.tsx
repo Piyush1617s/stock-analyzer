@@ -1,8 +1,8 @@
-import Card from "../components/Card";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { fetchStockHistory, fetchIndicators } from "../services/api";
+import { fetchStockHistory, fetchIndicators, fetchPrediction } from "../services/api";
 import CandlestickChart from "../components/CandlestickChart";
+import Card from "../components/Card";
 
 type OHLC = {
   date: string;
@@ -23,12 +23,17 @@ function StockDetail() {
   const { symbol } = useParams();
   const [history, setHistory] = useState<OHLC[]>([]);
   const [indicators, setIndicators] = useState<Indicator[]>([]);
+  const [prediction, setPrediction] = useState<{
+    prediction: "UP" | "DOWN";
+    confidence: number;
+  } | null>(null);
 
   useEffect(() => {
     if (!symbol) return;
 
     fetchStockHistory(symbol).then(setHistory);
     fetchIndicators(symbol).then(setIndicators);
+    fetchPrediction(symbol).then(setPrediction);
   }, [symbol]);
 
   const candles = history.map((h) => ({
@@ -65,6 +70,25 @@ function StockDetail() {
         <span style={{ color: "#f59e0b" }}>●</span> EMA (Exponential Moving Average)
       </p>
     </Card>
+    <Card title="AI Market Bias">
+  {prediction ? (
+    <p>
+      Direction:{" "}
+      <strong
+        style={{
+          color: prediction.prediction === "UP" ? "green" : "red",
+        }}
+      >
+        {prediction.prediction}
+      </strong>
+      <br />
+      Confidence: {(prediction.confidence * 100).toFixed(1)}%
+    </p>
+  ) : (
+    <p>Loading AI signal...</p>
+  )}
+</Card>
+
   </div>
 );
 }

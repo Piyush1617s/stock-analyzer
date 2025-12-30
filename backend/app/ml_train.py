@@ -46,3 +46,8 @@ print(cm)
 
 print("\nClassification Report:")
 print(classification_report(y_test, preds))
+
+import joblib
+
+joblib.dump(model, "app/model.pkl")
+print("Model saved to app/model.pkl")

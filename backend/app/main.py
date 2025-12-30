@@ -1,3 +1,5 @@
+import joblib
+import pandas as pd
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import yfinance as yf
@@ -151,3 +153,40 @@ def get_stock_features(symbol: str):
         })
 
     return features
+
+@app.get("/stock/{symbol}/predict")
+def predict_direction(symbol: str):
+    model = joblib.load("app/model.pkl")
+
+    ticker_map = {
+        "RELIANCE": "RELIANCE.NS",
+        "TCS": "TCS.NS",
+        "INFY": "INFY.NS"
+    }
+
+    ticker = ticker_map.get(symbol.upper())
+    if not ticker:
+        return {}
+
+    stock = yf.Ticker(ticker)
+    data = stock.history(period="3mo")
+
+    data["return"] = data["Close"].pct_change()
+    data["ema"] = data["Close"].ewm(span=10).mean()
+    data["sma"] = data["Close"].rolling(10).mean()
+    data["volatility"] = data["return"].rolling(10).std()
+    data["momentum"] = data["ema"] - data["sma"]
+
+    data = data.dropna()
+
+    latest = data.iloc[-1][
+        ["return", "ema", "sma", "momentum", "volatility"]
+    ].values.reshape(1, -1)
+
+    prob = model.predict_proba(latest)[0][1]
+    prediction = "UP" if prob >= 0.5 else "DOWN"
+
+    return {
+        "prediction": prediction,
+        "confidence": round(float(prob), 3)
+    }

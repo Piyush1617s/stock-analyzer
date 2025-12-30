@@ -16,3 +16,9 @@ export async function fetchIndicators(symbol: string) {
   );
   return res.json();
 }
+export async function fetchPrediction(symbol: string) {
+  const res = await fetch(
+    `http://127.0.0.1:8000/stock/${symbol}/predict`
+  );
+  return res.json();
+}
