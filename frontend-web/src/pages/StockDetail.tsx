@@ -72,18 +72,34 @@ function StockDetail() {
     </Card>
     <Card title="AI Market Bias">
   {prediction ? (
-    <p>
-      Direction:{" "}
-      <strong
-        style={{
-          color: prediction.prediction === "UP" ? "green" : "red",
-        }}
-      >
-        {prediction.prediction}
-      </strong>
-      <br />
-      Confidence: {(prediction.confidence * 100).toFixed(1)}%
-    </p>
+    prediction.confidence >= 0.55 ? (
+      <p>
+        Direction:{" "}
+        <strong
+          style={{
+            color: prediction.prediction === "UP" ? "green" : "red",
+          }}
+        >
+          {prediction.prediction}
+        </strong>
+        <br />
+        Confidence: {(prediction.confidence * 100).toFixed(1)}%
+        <br />
+        {prediction.confidence >= 0.6 ? (
+          <span style={{ color: "green" }}>
+            Strong signal
+          </span>
+        ) : (
+          <span style={{ color: "#f59e0b" }}>
+            Weak signal — use caution
+          </span>
+        )}
+      </p>
+    ) : (
+      <p style={{ color: "#6b7280" }}>
+        No clear AI signal (low confidence)
+      </p>
+    )
   ) : (
     <p>Loading AI signal...</p>
   )}
