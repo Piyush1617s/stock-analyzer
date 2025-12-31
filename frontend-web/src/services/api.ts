@@ -1,24 +1,27 @@
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 export async function fetchStocks() {
-  const response = await fetch("http://127.0.0.1:8000/stocks");
+  const response = await fetch(`${API_BASE}/stocks`);
   return response.json();
 }
 
 export async function fetchStockHistory(symbol: string) {
   const response = await fetch(
-    `http://127.0.0.1:8000/stock/${symbol}/history`
+    `${API_BASE}/stock/${symbol}/history`
   );
   return response.json();
 }
 
 export async function fetchIndicators(symbol: string) {
   const res = await fetch(
-    `http://127.0.0.1:8000/stock/${symbol}/indicators`
+    `${API_BASE}/stock/${symbol}/indicators`
   );
   return res.json();
 }
+
 export async function fetchPrediction(symbol: string) {
   const res = await fetch(
-    `http://127.0.0.1:8000/stock/${symbol}/predict`
+    `${API_BASE}/stock/${symbol}/predict`
   );
   return res.json();
 }

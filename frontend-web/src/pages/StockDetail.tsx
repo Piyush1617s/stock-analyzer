@@ -1,3 +1,4 @@
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 import ChatBox from "../components/ChatBox";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -36,7 +37,7 @@ function StockDetail() {
     fetchStockHistory(symbol).then(setHistory);
     fetchIndicators(symbol).then(setIndicators);
     fetchPrediction(symbol).then(setPrediction);
-    fetch(`http://127.0.0.1:8000/stock/${symbol}/explain`)
+    fetch(`${API_BASE}/stock/${symbol}/explain`)
       .then(res => res.json())
       .then(data => setExplanation(data.explanation));
 
