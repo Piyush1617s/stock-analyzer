@@ -19,7 +19,7 @@ app.add_middleware(
 def root():
     return {"message": "Stock Analyzer Backend Running"}
 
-@app.get("/stocks")
+@app.api_route("/stocks", methods=["GET", "HEAD"])
 def get_stocks():
     symbols = {
         "RELIANCE": "RELIANCE.NS",
