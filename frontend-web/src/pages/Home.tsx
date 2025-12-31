@@ -10,18 +10,42 @@ type Stock = {
 function Home() {
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchStocks().then((data) => {
-      setStocks(data);
-      setLoading(false);
-    });
+    setLoading(true);
+    setError(null);
+
+    fetchStocks()
+      .then((data) => {
+        setStocks(data);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError("Unable to load stocks. Please try again.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   return (
     <div>
       <h2>Stocks</h2>
-      {loading ? <p>Loading...</p> : <StockTable stocks={stocks} />}
+
+      {loading && <p>Loading stocks...</p>}
+
+      {!loading && error && (
+        <p style={{ color: "red" }}>{error}</p>
+      )}
+
+      {!loading && !error && stocks.length === 0 && (
+        <p>No stocks available.</p>
+      )}
+
+      {!loading && !error && stocks.length > 0 && (
+        <StockTable stocks={stocks} />
+      )}
     </div>
   );
 }
